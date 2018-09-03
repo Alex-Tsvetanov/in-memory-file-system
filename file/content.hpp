@@ -37,5 +37,9 @@ namespace file
 				{
 					this->content = {};
 				}
+		public: TxtContent (std::initializer_list <unsigned char> v)
+				{
+					this->content = std::vector <unsigned char> (v.begin (), v.end ());		
+				}
 	};
 }

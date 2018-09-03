@@ -1,6 +1,7 @@
 #pragma once
 #include <fstream>
 #include <fs_node.hpp>
+#include <exception>
 
 namespace directory
 {
@@ -24,7 +25,15 @@ namespace directory
 					this->children.insert (child);
 					return this;
 				}
-		public: Directory (std::string label = "/") : FS::Node (label)
+
+		public: Node* get_child_by_name (const std::string& name)
+				{
+					auto it = this->children.find (new FS::Find_node_pattern (name));
+					if (it == this->children.end ())
+					 	throw FS::no_such_file_or_directory (this->get_path ()+ "/" + name);
+					return *it;
+				}
+		public: Directory (std::string label = "") : FS::Node (label)
 				{}
 	};
 }

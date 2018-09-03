@@ -31,6 +31,7 @@ namespace file
 				}
 		public: File* write (Content* c, std::ios_base::openmode t = std::ofstream::app)
 				{
+					//TODO: write in different modes
 					for (size_t i = 0 ; i < c->get_size () ; i ++)
 						this->content->append (c->get_content ()[i]);
 					return this;
