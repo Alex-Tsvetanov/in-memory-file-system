@@ -55,8 +55,9 @@ TEST_SUITE("FS::FileSystem::") {
 
 			fs ()->rm (fs ()->get_child_by_name ("test_file_1.txt"));
 			CHECK(fs ()->get_size ().to_bytes () == 0);
+			CHECK_THROWS_AS(fs ()->get_child_by_name("test_file_1.txt"), FS::no_such_file_or_directory);
 		}
-		TEST_CASE("should add new directory::Directory") {
+		TEST_CASE("should remove an existing directory::Directory") {
 			FS::FileSystem fs;
 
 			REQUIRE(fs () != nullptr);
