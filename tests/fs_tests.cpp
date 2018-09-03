@@ -56,5 +56,19 @@ TEST_SUITE("FS::FileSystem::") {
 			fs ()->rm (fs ()->get_child_by_name ("test_file_1.txt"));
 			CHECK(fs ()->get_size ().to_bytes () == 0);
 		}
+		TEST_CASE("should add new directory::Directory") {
+			FS::FileSystem fs;
+
+			REQUIRE(fs () != nullptr);
+			REQUIRE(fs ()->get_size ().to_bytes () == 0);
+
+			directory::Directory* test_folder = new directory::Directory ("test_folder");
+			fs ()->create_child (test_folder);
+
+			CHECK(fs ()->get_child_by_name("test_folder") == test_folder);
+
+			fs ()->rm (fs ()->get_child_by_name ("test_folder"));
+			CHECK_THROWS_AS(fs ()->get_child_by_name("test_folder"), FS::no_such_file_or_directory);
+		}
 	}
 }
