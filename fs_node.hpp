@@ -40,6 +40,14 @@ namespace FS
 		protected: std::set < Node*, compare > children;
 		   public: virtual Size get_size () const = 0;
 		   public: virtual bool is_file () const = 0;
+		   public: std::vector < const Node* > get_children () const
+				   {
+					   std::vector < const Node * > v;
+					   for (auto& x : children)
+						   v.push_back (const_cast <Node*> (x));
+
+						return v;
+				   }
 		   public: Node (std::string label) : name (label)
 		      	   {
 		      	      this->parent = nullptr;
@@ -49,10 +57,6 @@ namespace FS
 				       if (this->parent == nullptr)
 				        	 return this->name;
 				       return this->parent->get_path () + "/" + this->name;
-				   }
-		   public: const std::set < Node*, compare >& get_children () const 
-		   		   {
-					   return this->children;
 				   }
 		   public: const std::string& get_name () const 
 		   		   {
@@ -85,7 +89,11 @@ namespace FS
 						p->children.erase (c);
 						delete c;
 						return p;
-				   }	
+				   }
+		   public: Node* rm (const std::string& path)
+		   		   {
+						return FS::Node::rm (this->find_by_full_path (path));
+				   }
 	};
 	class Find_node_pattern : public Node
 	{

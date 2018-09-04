@@ -3,73 +3,91 @@
 #include <iostream>
 #include <initializer_list>
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
+#include <tests/moka/moka.h>
 
-TEST_SUITE("FS::FileSystem::") {
-	TEST_SUITE("create_child") {
-		TEST_CASE("should add new file::File") {
-			FS::FileSystem fs;
+Moka::Context fs_tests("FS::", [](Moka::Context& it) {
+	it.has ("FileSystem::", [](Moka::Context& it) {
+		it.has ("create_child", [](Moka::Context& it) {
+			it.should ("add new file::File*", []() {
+					FS::FileSystem fs;
 
-			REQUIRE(fs () != nullptr);
-			REQUIRE(fs ()->get_size ().to_bytes () == 0);
+					must_not_equal (fs (), nullptr);
+					must_equal (fs ()->get_size ().to_bytes (), 0);
 
-			file::File* test_file = new file::TxtFile ("test_file_1.txt");
-			fs ()->create_child (test_file);
+					file::File* test_file = new file::TxtFile ("test_file_1.txt");
+					fs ()->create_child (test_file);
 
-			CHECK(fs ()->get_child_by_name("test_file_1.txt") == test_file);
+					must_equal (fs ()->get_child_by_name("test_file_1.txt"), test_file);
+					
+					const std::initializer_list<unsigned char> content = {'A','l','e','x',' ','i', 's',' ','p','r','o','g','r','a','m','m','e','r','.'};
+					test_file->write (new file::TxtContent (content));
+
+					must_equal (fs ()->get_size ().to_bytes (), content.size ());
+			});
+			it.should ("add new directory::Directory*", []() {
+					FS::FileSystem fs;
+
+					must_not_equal (fs (), nullptr);
+					must_equal (fs ()->get_size ().to_bytes (), 0);
 			
-			const std::initializer_list<unsigned char> content = {'A','l','e','x',' ','i', 's',' ','p','r','o','g','r','a','m','m','e','r','.'};
-			test_file->write (new file::TxtContent (content));
+					directory::Directory* test_folder = new directory::Directory ("test_folder");
+					fs ()->create_child (test_folder);
 
-			CHECK(fs ()->get_size ().to_bytes () == content.size ());
-		}
-		TEST_CASE("should add new directory::Directory") {
-			FS::FileSystem fs;
+					must_equal (fs ()->get_child_by_name("test_folder"), test_folder);
+			});
+		});
+		it.has ("rm", [](Moka::Context& it) {
+			it.should ("remove an existing file::File*", []() {
+					FS::FileSystem fs;
 
-			REQUIRE(fs () != nullptr);
-			REQUIRE(fs ()->get_size ().to_bytes () == 0);
+					must_not_equal (fs (), nullptr);
+					must_equal (fs ()->get_size ().to_bytes (), 0);
 
-			directory::Directory* test_folder = new directory::Directory ("test_folder");
-			fs ()->create_child (test_folder);
+					file::File* test_file = new file::TxtFile ("test_file_1.txt");
+					fs ()->create_child (test_file);
 
-			CHECK(fs ()->get_child_by_name("test_folder") == test_folder);
-		}
-	}
-	TEST_SUITE("rm") {
-		TEST_CASE("should remove an existing file::File") {
-			FS::FileSystem fs;
+					must_equal (fs ()->get_child_by_name("test_file_1.txt"), test_file);
+					
+					const std::initializer_list<unsigned char> content = {'A','l','e','x',' ','i', 's',' ','p','r','o','g','r','a','m','m','e','r','.'};
+					test_file->write (new file::TxtContent (content));
 
-			REQUIRE(fs () != nullptr);
-			REQUIRE(fs ()->get_size ().to_bytes () == 0);
+					must_equal (fs ()->get_size ().to_bytes (), content.size ());
 
-			file::File* test_file = new file::TxtFile ("test_file_1.txt");
-			fs ()->create_child (test_file);
+					fs ()->rm (fs ()->get_child_by_name ("test_file_1.txt"));
+					
+					must_equal (fs ()->get_size ().to_bytes (), 0);
+					must_equal (fs ()->get_children().size (), 0); 
+			});
+			it.should ("remove an existing directory::Directory*", []() {
+					FS::FileSystem fs;
 
-			CHECK(fs ()->get_child_by_name("test_file_1.txt") == test_file);
-			
-			const std::initializer_list<unsigned char> content = {'A','l','e','x',' ','i', 's',' ','p','r','o','g','r','a','m','m','e','r','.'};
-			test_file->write (new file::TxtContent (content));
+					must_not_equal (fs (), nullptr);
+					must_equal (fs ()->get_size ().to_bytes (), 0);
 
-			CHECK(fs ()->get_size ().to_bytes () == content.size ());
+					directory::Directory* test_folder = new directory::Directory ("test_folder");
+					fs ()->create_child (test_folder);
 
-			fs ()->rm (fs ()->get_child_by_name ("test_file_1.txt"));
-			CHECK(fs ()->get_size ().to_bytes () == 0);
-			CHECK_THROWS_AS(fs ()->get_child_by_name("test_file_1.txt"), FS::no_such_file_or_directory);
-		}
-		TEST_CASE("should remove an existing directory::Directory") {
-			FS::FileSystem fs;
+					must_equal (fs ()->get_child_by_name("test_folder"), test_folder);
 
-			REQUIRE(fs () != nullptr);
-			REQUIRE(fs ()->get_size ().to_bytes () == 0);
+					fs ()->rm (fs ()->get_child_by_name ("test_folder"));
+					must_equal (fs ()->get_children().size (), 0); 
+			});
+			it.should ("throw a FS::no_such_file_or_directory exception when remove an unexisting FS::Node*", []() {
+					FS::FileSystem fs;
 
-			directory::Directory* test_folder = new directory::Directory ("test_folder");
-			fs ()->create_child (test_folder);
+					must_not_equal (fs (), nullptr);
+					must_equal (fs ()->get_size ().to_bytes (), 0);
 
-			CHECK(fs ()->get_child_by_name("test_folder") == test_folder);
-
-			fs ()->rm (fs ()->get_child_by_name ("test_folder"));
-			CHECK_THROWS_AS(fs ()->get_child_by_name("test_folder"), FS::no_such_file_or_directory);
-		}
-	}
+					must_throw (FS::no_such_file_or_directory, [&]() { fs ()->rm ("test_folder"); }); 
+			});
+		});
+	});
+});
+int main () 
+{
+	std::cout << "===============================  Testing  ===============================\n\n";
+	Moka::Report report;
+	fs_tests.test(report);
+	report.print();
+	return 0;
 }

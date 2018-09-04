@@ -1,0 +1,3 @@
+[submodule "tests/moka"]
+	path = tests/moka
+	url = https://github.com/xavierholt/moka/
