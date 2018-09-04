@@ -38,6 +38,11 @@ namespace FS
 		protected: std::string name;
 		protected: Node* parent;
 		protected: std::set < Node*, compare > children;
+		   public: virtual ~Node () 
+		   		   {
+						 name.clear ();
+						 children.clear ();
+				   }
 		   public: virtual Size get_size () const = 0;
 		   public: virtual bool is_file () const = 0;
 		   public: std::vector < const Node* > get_children () const

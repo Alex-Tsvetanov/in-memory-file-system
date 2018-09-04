@@ -11,4 +11,12 @@ namespace FS
 											path)
 		{ }
 	};
+	class file_exists : public std::system_error
+	{
+		public: file_exists (std::string path) : 
+										std::system_error(
+											std::error_code(17, std::system_category()), 
+											path)
+		{ }
+	};
 }

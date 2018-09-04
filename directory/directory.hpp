@@ -22,7 +22,9 @@ namespace directory
 		public: Directory* create_child (Node* child)
 				{
 					child->parent = this;
-					this->children.insert (child);
+					auto x = this->children.insert (child);
+					if (x.second == false)
+						throw FS::file_exists (this->get_path());
 					return this;
 				}
 
